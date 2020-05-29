@@ -22,10 +22,35 @@ module ScoutApm
         # before and after filter timing. Instrumenting Base includes those
         # filters, at the expense of missing out on controllers that don't use
         # the full Rails stack.
-        ActiveSupport.on_load(:action_controller) do
+        # ActiveSupport.on_load(:action_controller) do
+        #   @installed = true
+        #
+        #   ActiveSupport.on_load(:action_controller_base) do
+        #     logger.info "Instrumenting ActionController::Base"
+        #     ::ActionController::Base.class_eval do
+        #       # include ScoutApm::Tracer
+        #       include ScoutApm::Instruments::ActionControllerBaseInstruments
+        #     end
+        #   end
+        #
+        #   ActiveSupport.on_load(:action_controller_metal) do
+        #     logger.info "Instrumenting ActionController::Metal"
+        #     ::ActionController::Metal.class_eval do
+        #       include ScoutApm::Instruments::ActionControllerMetalInstruments
+        #     end
+        #   end
+        #
+        #   ActiveSupport.on_load(:action_controller_api) do
+        #     logger.info "Instrumenting ActionController::Api"
+        #     ::ActionController::API.class_eval do
+        #       include ScoutApm::Instruments::ActionControllerAPIInstruments
+        #     end
+        #   end
+        # end
+        if defined?(::ActionController)
           @installed = true
 
-          ActiveSupport.on_load(:action_controller_base) do
+          if defined?(::ActionController::Base)
             logger.info "Instrumenting ActionController::Base"
             ::ActionController::Base.class_eval do
               # include ScoutApm::Tracer
@@ -33,21 +58,20 @@ module ScoutApm
             end
           end
 
-          ActiveSupport.on_load(:action_controller_metal) do
+          if defined?(::ActionController::Metal)
             logger.info "Instrumenting ActionController::Metal"
             ::ActionController::Metal.class_eval do
               include ScoutApm::Instruments::ActionControllerMetalInstruments
             end
           end
 
-          ActiveSupport.on_load(:action_controller_api) do
+          if defined?(::ActionController::API)
             logger.info "Instrumenting ActionController::Api"
             ::ActionController::API.class_eval do
               include ScoutApm::Instruments::ActionControllerAPIInstruments
             end
           end
         end
-
         # Returns a new anonymous module each time it is called. So
         # we can insert this multiple times into the ancestors
         # stack. Otherwise it only exists the first time you include it
